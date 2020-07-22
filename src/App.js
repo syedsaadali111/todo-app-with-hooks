@@ -1,24 +1,74 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useCallback, useEffect } from 'react';
+import NewTodoForm from './NewTodoForm';
+import TodoList from './TodoList';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+const App = () => {
+
+  const [newTodo, setNewTodo] = useState('');
+  const [todos, setTodos] = useState([]);
+  
+  const onNewTodoChange = useCallback( (e) => {
+    setNewTodo(e.target.value);
+  }, []);
+
+  const formSubmitted = useCallback( event => {
+    event.preventDefault();
+    if (!newTodo.trim()) return;
+    setTodos([
+      {
+        id: todos.length ? todos[0].id + 1 : 1,
+        content: newTodo,
+        done: false
+      },
+      ...todos
+    ]);
+
+    setNewTodo('');
+  }, [newTodo, todos]);
+
+  useEffect( () => {
+    console.log("todos: ", todos);
+  }, [todos]);
+
+  const toggleTodoDone = useCallback((event, index) => {
+    const newTodos = [...todos];
+    newTodos[index] = {
+      ...newTodos[index],
+      done: event.target.checked
+    }
+    setTodos(newTodos);
+  }, [todos]);
+
+  const removeTodo = useCallback((event, index) => {
+    const newTodos = [...todos];
+    newTodos.splice(index, 1);
+    setTodos(newTodos);
+  }, [todos]);
+
+  const markAllDone= useCallback(() => {
+    const updatedTodos = todos.map( (todo) => {
+      return {
+        ...todo,
+        done: true
+      };
+    });
+    setTodos(updatedTodos)
+  }, [todos]);
+
+  return(
+    <div>
+      <h3>Todo App with only Hooks</h3>
+      <NewTodoForm
+        onNewTodoChange={onNewTodoChange}
+        formSubmitted={formSubmitted}
+        markAllDone={markAllDone}
+        newTodo={newTodo}
+      />
+      <TodoList
+        todos={todos}
+        toggleTodoDone={toggleTodoDone}
+        removeTodo={removeTodo}
+      />
     </div>
   );
 }
